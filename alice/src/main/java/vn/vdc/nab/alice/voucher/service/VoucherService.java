@@ -1,5 +1,6 @@
 package vn.vdc.nab.alice.voucher.service;
 
+import java.io.IOException;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +13,7 @@ import vn.vdc.nab.alice.voucher.converter.VoucherEntityConverter;
 import vn.vdc.nab.alice.voucher.converter.VoucherResponseConverter;
 import vn.vdc.nab.alice.voucher.entity.VoucherEntity;
 import vn.vdc.nab.alice.voucher.entity.VoucherState;
+import vn.vdc.nab.alice.voucher.exception.ExternalIsUnAvailableException;
 import vn.vdc.nab.alice.voucher.exception.VoucherNeedsMoreTimeException;
 import vn.vdc.nab.alice.voucher.model.VoucherRequestModel;
 import vn.vdc.nab.alice.voucher.model.VoucherResponseModel;
@@ -36,14 +38,19 @@ public class VoucherService {
 	private VoucherDao voucherDao;
 
 	public VoucherResponseModel genereate(VoucherRequestModel voucherRequestModel)
-			throws VoucherNeedsMoreTimeException {
+			throws VoucherNeedsMoreTimeException, ExternalIsUnAvailableException {
 		VoucherEntity entity = voucherDao.saveAndFlush(preProcessingVoucher(voucherRequestModel.getMobile()));
 		
-		Optional<BobResponseModel> canBeReseponse = this.voucherGeneratorConnector
-				.generateVoucher(entity.getId(), voucherRequestModel.getMobile());
+		Optional<BobResponseModel> canBeReseponse = Optional.empty();
+		try {
+			canBeReseponse = this.voucherGeneratorConnector
+					.generateVoucher(entity.getId(), voucherRequestModel.getMobile());
+		} catch (IOException e) {
+			throw new ExternalIsUnAvailableException();
+		}
 		if (!canBeReseponse.isPresent()) {
 			// FIXME: handle error here
-			return null;
+			return VoucherResponseModel.builder().mobile(voucherRequestModel.getMobile()).build();
 		}
 
 		BobResponseModel bobResponseModel = canBeReseponse.get();

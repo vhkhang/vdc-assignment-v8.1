@@ -33,7 +33,7 @@ public class VoucherGeneratorConnector implements IVoucherGeneratorConnector{
 	JsonMapper jsonMapper;
 
 	@Override
-	public Optional<BobResponseModel> generateVoucher(String id, String mobile) throws VoucherNeedsMoreTimeException {
+	public Optional<BobResponseModel> generateVoucher(String id, String mobile) throws VoucherNeedsMoreTimeException, IOException {
 		int expectedTimeout = this.appConfig.getVoucherTimeoutInSeconds();
 		String url = this.appConfig.getVoucherUrl();
 
@@ -55,7 +55,8 @@ public class VoucherGeneratorConnector implements IVoucherGeneratorConnector{
 			loggingUtil.warn("Reach timeout while generate voucher: " + expectedTimeout);
 			throw new VoucherNeedsMoreTimeException(expectedTimeout);
 		} catch (IOException e) {
-			return Optional.empty();
+			loggingUtil.error(e.getMessage());
+			throw e;
 		}
 	}
 
