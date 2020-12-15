@@ -4,6 +4,19 @@
 
 ![Alt text](diagrams/System_overview.jpg)
 
+## Services responsibilities:
+* ALICE: A main contacting service from the Webpage/customer
+* BOB: A connection point to get the voucher from 3rd party and directly or indirectly return the result to ALICE.
+* DAVE: A notifier which needs to notify customer their new voucher by connect/use any system (SNS/...)
+* The MessageQ: The indirectly way where can notify to system whenever the new voucher has been created.
+
+(?) IMHO, we can easily scale and secure the system.
+
+## TODO:
+* Bob/Dave service are missing.
+* The messageQ setup needs more time than what I've tented to invest into.
+* Get all related vouchers of a phone number service is missing on ALICE.
+
 ## Project setup for ALICE
 1/ `cd alice`
 
